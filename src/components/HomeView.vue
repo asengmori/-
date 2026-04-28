@@ -17,7 +17,9 @@
         >
           <div class="category-icon">{{ cat.icon }}</div>
           <div class="category-name">{{ cat.name }}</div>
-          <div class="category-count">{{ getCount(cat.id) }} 题</div>
+          <div class="category-count">
+            名词 {{ getNounCount(cat.id) }} · 填空 {{ getBlankCount(cat.id) }}
+          </div>
         </div>
       </div>
     </div>
@@ -35,6 +37,13 @@
           {{ type.name }}
         </button>
       </div>
+    </div>
+
+    <div class="section" v-if="selectedType === 'noun'">
+      <label class="shuffle-label">
+        <input type="checkbox" v-model="shuffleMode" />
+        乱序模式
+      </label>
     </div>
 
     <div class="section">
@@ -71,16 +80,37 @@ import { getWrongItems } from '../store.js'
 const router = useRouter()
 const selectedCategory = ref('')
 const selectedType = ref('')
+const shuffleMode = ref(false)
 
 const wrongCount = computed(() => getWrongItems().length)
 
-function getCount(catId) {
-  const noun = nounExplanations[catId]?.length || 0
-  const blank = fillBlanks[catId]?.length || 0
-  return noun + blank
+function getNounCount(catId) {
+  return nounExplanations[catId]?.length || 0
+}
+
+function getBlankCount(catId) {
+  return fillBlanks[catId]?.length || 0
 }
 
 function startQuiz() {
-  router.push(`/quiz/${selectedCategory.value}/${selectedType.value}`)
+  const query = shuffleMode.value ? { shuffle: '1' } : {}
+  router.push({ path: `/quiz/${selectedCategory.value}/${selectedType.value}`, query })
 }
 </script>
+
+<style scoped>
+.shuffle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #5a4d42;
+  cursor: pointer;
+}
+
+.shuffle-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #6b4c3b;
+}
+</style>

@@ -118,6 +118,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { nounExplanations, fillBlanks, categories } from '../data/questions.js'
 import { getWrongItems, saveWrongItem, removeWrongItem } from '../store.js'
 
@@ -126,23 +127,39 @@ const props = defineProps({
   type: String
 })
 
+const route = useRoute()
 const currentIndex = ref(0)
 const showAnswer = ref(false)
 const userAnswers = ref([])
 const checked = ref(false)
 
-const questions = computed(() => {
-  if (props.type === 'noun') {
-    return nounExplanations[props.category] || []
+function shuffleArray(arr) {
+  const shuffled = [...arr]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
-  return fillBlanks[props.category] || []
+  return shuffled
+}
+
+const isShuffle = computed(() => route.query.shuffle === '1')
+
+const questions = computed(() => {
+  let base
+  if (props.type === 'noun') {
+    base = nounExplanations[props.category] || []
+  } else {
+    base = fillBlanks[props.category] || []
+  }
+  return isShuffle.value ? shuffleArray(base) : base
 })
 
 const currentQuestion = computed(() => questions.value[currentIndex.value])
 
 const title = computed(() => {
   const cat = categories.find(c => c.id === props.category)
-  return (cat?.name || '') + ' · ' + (props.type === 'noun' ? '名词解释' : '填空题')
+  const shuffleTag = isShuffle.value ? ' (乱序)' : ''
+  return (cat?.name || '') + ' · ' + (props.type === 'noun' ? '名词解释' : '填空题') + shuffleTag
 })
 
 const isWrong = computed(() => {
@@ -165,7 +182,6 @@ function getResultClass(idx) {
 function checkAnswer() {
   checked.value = true
   if (allCorrect.value) {
-    // 答对了，从错题本移除
     removeWrongItem(currentQuestion.value.id)
   } else {
     saveWrongItem({
