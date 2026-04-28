@@ -116,13 +116,11 @@ import {
   loadTaoState, saveTaoState, spendWine,
   getRandomInteraction, getWineCost, earnSilver
 } from '../tao.js'
-import { trackEvent, exportAnalytics } from '../analytics.js'
+import { trackEvent } from '../analytics.js'
 
 const panelOpen = ref(false)
 const state = ref(loadTaoState())
 const lastInteraction = ref(null)
-const analyticsVisible = ref(false)
-const analyticsSummary = ref(null)
 
 const taoEmoji = computed(() => {
   switch (state.value.wineLevel) {
@@ -202,21 +200,6 @@ function resetWine() {
   lastInteraction.value = { text: '（喝口茶）清醒了清醒了……继续读书吧。', type: 'talk' }
   saveTaoState(state.value)
 }
-
-function showAnalytics() {
-  analyticsSummary.value = exportAnalytics()
-  analyticsVisible.value = true
-  trackEvent('view_analytics')
-}
-
-const accuracy = computed(() => {
-  const s = analyticsSummary.value
-  if (!s) return '0%'
-  const correct = s.eventsByType?.answer_correct || 0
-  const wrong = s.eventsByType?.answer_wrong || 0
-  const total = correct + wrong
-  return total > 0 ? Math.round((correct / total) * 100) + '%' : '0%'
-})
 
 // Listen for events from quiz
 window.addEventListener('tao-earn', (e) => {
@@ -459,81 +442,6 @@ onMounted(() => {
 
 .action-btn:active {
   border-color: #6b4c3b;
-  color: #6b4c3b;
-}
-
-/* Analytics */
-.analytics-section {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e8e2da;
-}
-
-.analytics-btn {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 2px dashed #e8e2da;
-  background: transparent;
-  font-size: 13px;
-  color: #8a7a6d;
-  cursor: pointer;
-}
-
-.analytics-btn:active {
-  border-color: #6b4c3b;
-  color: #6b4c3b;
-}
-
-.analytics-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 70;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.analytics-content {
-  background: #fff;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 360px;
-  overflow: hidden;
-}
-
-.analytics-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e8e2da;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.analytics-body {
-  padding: 16px 20px;
-}
-
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0ede8;
-  font-size: 14px;
-}
-
-.stat-row:last-child {
-  border-bottom: none;
-}
-
-.stat-row strong {
   color: #6b4c3b;
 }
 </style>
