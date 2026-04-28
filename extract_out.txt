@@ -1,0 +1,19 @@
+Extracting ancient...
+  372 items
+
+Ancient chapters:
+  [7] 先秦文学: 43 items
+  [8] 秦汉文学: 35 items
+  [9] 魏晋南北朝文学: 52 items
+  [10] 隋唐文学: 72 items
+  [11] 宋元文学: 79 items
+  [12] 明清文学: 91 items
+
+Extracting modern...
+  268 items
+
+Modern chapters:
+  [0] : 175 items
+  [1] 当代文学: 93 items
+
+Done!

@@ -8,10 +8,8 @@ export const questionTypes = [
   { id: 'blank', name: '填空题' }
 ]
 
-// 名词解释数据 - 从 PDF 自动生成 (640条)
-export { nounExplanations } from './noun_explanations.js'
+export { nounExplanations, chapterInfo } from './noun_explanations.js'
 
-// 填空题数据 - 手动维护
 export const fillBlanks = {
   ancient: [
     {

@@ -5,6 +5,7 @@
       <div class="header-subtitle">每天进步一点点</div>
     </div>
 
+    <!-- 选择方向 -->
     <div class="section">
       <div class="section-title">选择方向</div>
       <div class="category-grid">
@@ -13,7 +14,7 @@
           :key="cat.id"
           class="category-card"
           :class="{ selected: selectedCategory === cat.id }"
-          @click="selectedCategory = cat.id"
+          @click="selectCategory(cat.id)"
         >
           <div class="category-icon">{{ cat.icon }}</div>
           <div class="category-name">{{ cat.name }}</div>
@@ -24,7 +25,8 @@
       </div>
     </div>
 
-    <div class="section">
+    <!-- 选择题型 -->
+    <div class="section" v-if="selectedCategory">
       <div class="section-title">选择题型</div>
       <div class="type-list">
         <button
@@ -39,17 +41,50 @@
       </div>
     </div>
 
+    <!-- 选择学习模式 -->
     <div class="section" v-if="selectedType === 'noun'">
-      <label class="shuffle-label">
-        <input type="checkbox" v-model="shuffleMode" />
-        乱序模式
-      </label>
+      <div class="section-title">学习模式</div>
+      <div class="mode-list">
+        <button
+          class="mode-btn"
+          :class="{ selected: mode === 'shuffle' }"
+          @click="mode = 'shuffle'"
+        >
+          🔀 随机
+        </button>
+        <button
+          class="mode-btn"
+          :class="{ selected: mode === 'sequential' }"
+          @click="mode = 'sequential'"
+        >
+          📖 正序
+        </button>
+      </div>
     </div>
 
+    <!-- 正序模式下选择单元 -->
+    <div class="section" v-if="mode === 'sequential' && selectedCategory">
+      <div class="section-title">选择单元</div>
+      <div class="chapter-list">
+        <div
+          v-for="ch in chapters"
+          :key="ch.id"
+          class="chapter-item"
+          :class="{ selected: selectedChapter === ch.id }"
+          @click="selectedChapter = ch.id"
+        >
+          <span class="chapter-idx">{{ ch.idx }}</span>
+          <span class="chapter-name">{{ ch.name }}</span>
+          <span class="chapter-count">{{ ch.count }}题</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 开始按钮 -->
     <div class="section">
       <button
         class="start-btn"
-        :disabled="!selectedCategory || !selectedType"
+        :disabled="!canStart"
         @click="startQuiz"
       >
         开始刷题
@@ -58,6 +93,7 @@
 
     <div class="bottom-spacer"></div>
 
+    <!-- 底部 Tab -->
     <div class="tab-bar">
       <div class="tab-item active" @click="$router.push('/')">
         <div class="tab-icon">📚</div>
@@ -74,15 +110,36 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { categories, questionTypes, nounExplanations, fillBlanks } from '../data/questions.js'
+import {
+  categories, questionTypes,
+  nounExplanations, fillBlanks, chapterInfo
+} from '../data/questions.js'
 import { getWrongItems } from '../store.js'
 
 const router = useRouter()
 const selectedCategory = ref('')
 const selectedType = ref('')
-const shuffleMode = ref(false)
+const mode = ref('shuffle')
+const selectedChapter = ref('')
 
 const wrongCount = computed(() => getWrongItems().length)
+
+const chapters = computed(() => {
+  return chapterInfo[selectedCategory.value] || []
+})
+
+const canStart = computed(() => {
+  if (!selectedCategory.value || !selectedType.value) return false
+  if (mode.value === 'sequential') return !!selectedChapter.value
+  return true
+})
+
+function selectCategory(catId) {
+  selectedCategory.value = catId
+  selectedType.value = ''
+  selectedChapter.value = ''
+  mode.value = 'shuffle'
+}
 
 function getNounCount(catId) {
   return nounExplanations[catId]?.length || 0
@@ -93,7 +150,11 @@ function getBlankCount(catId) {
 }
 
 function startQuiz() {
-  const query = shuffleMode.value ? { shuffle: '1' } : {}
+  const query = {}
+  if (mode.value === 'shuffle') query.shuffle = '1'
+  if (mode.value === 'sequential' && selectedChapter.value) {
+    query.chapter = selectedChapter.value
+  }
   router.push({ path: `/quiz/${selectedCategory.value}/${selectedType.value}`, query })
 }
 </script>
@@ -112,5 +173,87 @@ function startQuiz() {
   width: 18px;
   height: 18px;
   accent-color: #6b4c3b;
+}
+
+.mode-list {
+  display: flex;
+  gap: 12px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid #e8e2da;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  color: #5a4d42;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn:active { transform: scale(0.97); }
+
+.mode-btn.selected {
+  border-color: #6b4c3b;
+  background: #6b4c3b;
+  color: #fff;
+}
+
+.chapter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chapter-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #e8e2da;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chapter-item:active { transform: scale(0.98); }
+
+.chapter-item.selected {
+  border-color: #6b4c3b;
+  background: #fdf8f4;
+}
+
+.chapter-idx {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e8e2da;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b4c3b;
+  flex-shrink: 0;
+}
+
+.chapter-item.selected .chapter-idx {
+  background: #6b4c3b;
+  color: #fff;
+}
+
+.chapter-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: #3a2f28;
+}
+
+.chapter-count {
+  font-size: 13px;
+  color: #a89b8e;
 }
 </style>

@@ -119,7 +119,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { nounExplanations, fillBlanks, categories } from '../data/questions.js'
+import { nounExplanations, fillBlanks, categories, chapterInfo } from '../data/questions.js'
 import { getWrongItems, saveWrongItem, removeWrongItem } from '../store.js'
 import { earnSilver, loadTaoState, saveTaoState } from '../tao.js'
 
@@ -144,6 +144,7 @@ function shuffleArray(arr) {
 }
 
 const isShuffle = computed(() => route.query.shuffle === '1')
+const selectedChapter = computed(() => route.query.chapter || '')
 
 const questions = computed(() => {
   let base
@@ -152,6 +153,10 @@ const questions = computed(() => {
   } else {
     base = fillBlanks[props.category] || []
   }
+  // Filter by chapter if selected
+  if (selectedChapter.value) {
+    base = base.filter(item => item.chapter === selectedChapter.value)
+  }
   return isShuffle.value ? shuffleArray(base) : base
 })
 
@@ -159,8 +164,11 @@ const currentQuestion = computed(() => questions.value[currentIndex.value])
 
 const title = computed(() => {
   const cat = categories.find(c => c.id === props.category)
-  const shuffleTag = isShuffle.value ? ' (乱序)' : ''
-  return (cat?.name || '') + ' · ' + (props.type === 'noun' ? '名词解释' : '填空题') + shuffleTag
+  let modeTag = ''
+  if (isShuffle.value) modeTag = ' (乱序)'
+  else if (selectedChapter.value) modeTag = ` (${selectedChapter.value})`
+  else modeTag = ' (正序)'
+  return (cat?.name || '') + ' · ' + (props.type === 'noun' ? '名词解释' : '填空题') + modeTag
 })
 
 const isWrong = computed(() => {
