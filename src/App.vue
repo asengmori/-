@@ -46,12 +46,6 @@ body {
   border-radius: 50%;
 }
 
-.header-title {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
 .header-subtitle {
   font-size: 12px;
   opacity: 0.7;
@@ -69,9 +63,17 @@ body {
   cursor: pointer;
   padding: 4px 8px;
   opacity: 0.8;
+  z-index: 2;
 }
 
 .back-btn:active { opacity: 1; }
+
+.header-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+}
 
 /* Category Cards */
 .section {
