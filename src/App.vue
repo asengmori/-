@@ -30,7 +30,7 @@ body {
 .header {
   background: linear-gradient(135deg, #4a3728 0%, #6b4c3b 100%);
   color: #fff;
-  padding: 24px 20px 20px;
+  padding: 24px 20px 20px 56px;
   position: relative;
   overflow: hidden;
 }
