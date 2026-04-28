@@ -115,6 +115,7 @@ import {
   nounExplanations, fillBlanks, chapterInfo
 } from '../data/questions.js'
 import { getWrongItems } from '../store.js'
+import { trackEvent } from '../analytics.js'
 
 const router = useRouter()
 const selectedCategory = ref('')
@@ -135,6 +136,7 @@ const canStart = computed(() => {
 })
 
 function selectCategory(catId) {
+  trackEvent('select_category', { category: catId })
   selectedCategory.value = catId
   selectedType.value = ''
   selectedChapter.value = ''
@@ -150,6 +152,12 @@ function getBlankCount(catId) {
 }
 
 function startQuiz() {
+  trackEvent('start_quiz', {
+    category: selectedCategory.value,
+    type: selectedType.value,
+    mode: mode.value,
+    chapter: selectedChapter.value || null
+  })
   const query = {}
   if (mode.value === 'shuffle') query.shuffle = '1'
   if (mode.value === 'sequential' && selectedChapter.value) {

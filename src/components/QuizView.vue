@@ -122,6 +122,7 @@ import { useRoute } from 'vue-router'
 import { nounExplanations, fillBlanks, categories, chapterInfo } from '../data/questions.js'
 import { getWrongItems, saveWrongItem, removeWrongItem } from '../store.js'
 import { earnSilver, loadTaoState, saveTaoState } from '../tao.js'
+import { trackEvent } from '../analytics.js'
 
 const props = defineProps({
   category: String,
@@ -193,6 +194,11 @@ function checkAnswer() {
   if (allCorrect.value) {
     // 答对了，从错题本移除 + 赚银两
     removeWrongItem(currentQuestion.value.id)
+    trackEvent('answer_correct', {
+      category: props.category,
+      type: 'blank',
+      question: currentQuestion.value.question
+    })
     const newState = earnSilver(2)
     window.dispatchEvent(new CustomEvent('tao-earn', { detail: newState }))
   } else {
@@ -203,6 +209,11 @@ function checkAnswer() {
       category: props.category,
       question: currentQuestion.value.question,
       answers: currentQuestion.value.answers
+    })
+    trackEvent('answer_wrong', {
+      category: props.category,
+      type: 'blank',
+      question: currentQuestion.value.question
     })
     const state = loadTaoState()
     state.totalWrong += 1
@@ -258,6 +269,10 @@ function resetState() {
 // 名词解释 - 查看答案赚银两
 function revealAnswer() {
   showAnswer.value = true
+  trackEvent('view_answer', {
+    category: props.category,
+    term: currentQuestion.value?.term
+  })
   const newState = earnSilver(1)
   window.dispatchEvent(new CustomEvent('tao-earn', { detail: newState }))
 }

@@ -4,6 +4,7 @@ import App from './App.vue'
 import HomeView from './components/HomeView.vue'
 import QuizView from './components/QuizView.vue'
 import WrongView from './components/WrongView.vue'
+import { trackPageView } from './analytics.js'
 
 const routes = [
   { path: '/', component: HomeView },
@@ -14,6 +15,10 @@ const routes = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes
+})
+
+router.afterEach((to) => {
+  trackPageView(to.path)
 })
 
 createApp(App).use(router).mount('#app')

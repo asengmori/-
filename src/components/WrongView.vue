@@ -66,6 +66,7 @@
 import { ref, computed } from 'vue'
 import { getWrongItems, removeWrongItem } from '../store.js'
 import { categories } from '../data/questions.js'
+import { trackEvent } from '../analytics.js'
 
 const showDetail = ref(false)
 const detailItem = ref({})
@@ -79,10 +80,12 @@ function getCategoryName(catId) {
 function viewDetail(item) {
   detailItem.value = item
   showDetail.value = true
+  trackEvent('view_wrong_item', { type: item.type, category: item.category })
 }
 
 function remove(id) {
   removeWrongItem(id)
+  trackEvent('remove_wrong_item')
   // Force re-render
   items.value.length // just accessing to trigger computed
 }
