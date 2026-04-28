@@ -1,10 +1,12 @@
 <template>
   <div class="app">
     <router-view />
+    <TaoYuanming />
   </div>
 </template>
 
 <script setup>
+import TaoYuanming from './components/TaoYuanming.vue'
 </script>
 
 <style>

@@ -19,7 +19,7 @@
         <div class="question-label">请解释以下名词</div>
         <div class="question-term">{{ currentQuestion.term }}</div>
 
-        <button v-if="!showAnswer" class="reveal-btn" @click="showAnswer = true">
+        <button v-if="!showAnswer" class="reveal-btn" @click="revealAnswer">
           点击查看答案
         </button>
 
@@ -121,6 +121,7 @@ import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { nounExplanations, fillBlanks, categories } from '../data/questions.js'
 import { getWrongItems, saveWrongItem, removeWrongItem } from '../store.js'
+import { earnSilver, loadTaoState, saveTaoState } from '../tao.js'
 
 const props = defineProps({
   category: String,
@@ -182,8 +183,12 @@ function getResultClass(idx) {
 function checkAnswer() {
   checked.value = true
   if (allCorrect.value) {
+    // 答对了，从错题本移除 + 赚银两
     removeWrongItem(currentQuestion.value.id)
+    const newState = earnSilver(2)
+    window.dispatchEvent(new CustomEvent('tao-earn', { detail: newState }))
   } else {
+    // 答错了，加入错题本 + 陶渊明失望
     saveWrongItem({
       id: currentQuestion.value.id,
       type: 'blank',
@@ -191,6 +196,10 @@ function checkAnswer() {
       question: currentQuestion.value.question,
       answers: currentQuestion.value.answers
     })
+    const state = loadTaoState()
+    state.totalWrong += 1
+    saveTaoState(state)
+    window.dispatchEvent(new CustomEvent('tao-wrong'))
   }
 }
 
@@ -236,6 +245,13 @@ function resetState() {
   if (currentQuestion.value?.answers) {
     userAnswers.value = new Array(currentQuestion.value.answers.length).fill('')
   }
+}
+
+// 名词解释 - 查看答案赚银两
+function revealAnswer() {
+  showAnswer.value = true
+  const newState = earnSilver(1)
+  window.dispatchEvent(new CustomEvent('tao-earn', { detail: newState }))
 }
 
 watch(() => [props.category, props.type], () => {
